@@ -5,20 +5,23 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 import logging
 import argparse
+import sys
 
-FILES_TO_COPY = ["master.ign", "worker.ign", "bootstrap.ign", "metadata.json", "auth"]
+def get_s3_client():
 
-def upload_to_aws(local_file, bucket, s3_file):
-    aws_access_key_id = os.environ.get("aws_access_key_id", "accessKey1")
-    aws_secret_access_key = os.environ.get("aws_secret_access_key", "verySecretKey1")
-    endpoint_url = args.s3_endpoint_url
+        aws_access_key_id = os.environ.get("aws_access_key_id", "accessKey1")
+        aws_secret_access_key = os.environ.get("aws_secret_access_key", "verySecretKey1")
 
-    s3 = boto3.client(
-        's3',
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key,
-        endpoint_url=endpoint_url
-    )
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            endpoint_url=args.s3_endpoint_url
+        )
+        return s3
+
+def upload_to_aws(s3, local_file, bucket, s3_file):
+
     try:
         s3.upload_file(local_file, bucket, s3_file, ExtraArgs={'ACL': 'public-read'})
         print("Upload Successful")
@@ -29,33 +32,50 @@ def upload_to_aws(local_file, bucket, s3_file):
 
 
 parser = argparse.ArgumentParser(description='Generate ignition manifest & kubeconfig')
-# TODO support pass yaml as string
-# parser.add_argument('--install_config_string', help='install config string', default=None)
 parser.add_argument('--file_name', help='output directory name', default="output_dir")
 parser.add_argument('--s3_endpoint_url', help='s3 endpoint url', default=None)
 parser.add_argument('--s3_bucket', help='s3 bucket', default='test')
+parser.add_argument('--files_prefix', help='file suffix', default='')
 args = parser.parse_args()
 
-# TODO support pass yaml as string
-# if not (args.install_config_string or os.path.isfile('install-config.yaml')):
-#     raise Exception("Must pass install_config file or string")
-#
-# if args.install_config_string:
-#     with open('install-config.yaml', 'w') as f:
-#         f.write(args.install_config_string)
 
-if not os.path.isdir('/installer_dir'):
-    raise Exception('installer directory is not mounted')
+install_config = os.environ.get("INSTALLER_CONFIG", None)
 
-if not os.path.isfile('/installer_dir/install-config.yaml'):
-    raise Exception("install config file not located in installer dir")
+if install_config:
+    subprocess.check_output("mkdir -p /installer_dir", shell=True)
+    args.file_name = "installer_dir"
+    with open('/installer_dir/install-config.yaml', 'w+') as f:
+            f.write(install_config)
 
+else:
+    if not os.path.isdir('/installer_dir'):
+        raise Exception('installer directory is not mounted')
+
+    if not os.path.isfile('/installer_dir/install-config.yaml'):
+        raise Exception("install config file not located in installer dir")
+
+
+sysstdout = sys.stdout
 command = "./openshift-install create ignition-configs --dir /installer_dir"
 try:
-    subprocess.check_output(command, shell=True)
+    subprocess.check_output(command, shell=True, stderr = sysstdout)
 except Exception as ex:
     raise Exception('Failed to generate files, exception: {}'.format(ex))
 
+
+args.s3_endpoint_url = os.environ.get("S3_ENDPOINT_URL", args.s3_endpoint_url)
 if args.s3_endpoint_url:
-    subprocess.check_output("zip {file_name}.zip {file_name} ".format(file_name=args.file_name), shell=True)
-    uploaded = upload_to_aws(args.file_name+'.zip', args.s3_bucket, args.file_name+'.zip')
+    bucket = os.environ.get('S3_BUCKET', args.s3_bucket)
+    s3 = get_s3_client()
+
+#     s3.create_bucket(Bucket=bucket)
+    bucket = "test"
+    prefix = os.environ.get("CLUSTER_ID", args.files_prefix)
+
+    for root, _, files in os.walk(args.file_name):
+         for r_file in files:
+            logging.info("Uplading file: {}".format(file))
+            file = os.path.join(root, r_file)
+            s3_file_name = "{}/{}".format(prefix, r_file)
+            print s3_file_name
+            uploaded = upload_to_aws(s3, file, bucket, s3_file_name)
