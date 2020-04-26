@@ -6,6 +6,7 @@ from botocore.exceptions import NoCredentialsError
 import logging
 import argparse
 import sys
+import json
 
 def get_s3_client():
 
@@ -29,6 +30,19 @@ def upload_to_aws(s3, local_file, bucket, s3_file):
     except NoCredentialsError:
         print("Credentials not available")
         return False
+
+def remove_bmo_provisioning(ignition_file):
+    found = False
+    with open(ignition_file, "r") as f:
+        data = json.load(f)
+        storageFiles = data['storage']['files']
+        for index, fileData in enumerate(storageFiles[:]):
+            if 'baremetal-provisioning-config' in fileData['path']:
+                del storageFiles[index]
+                found = True
+    if found:
+        with open(ignition_file,"w") as f:
+            json.dump(data, f)
 
 
 parser = argparse.ArgumentParser(description='Generate ignition manifest & kubeconfig')
@@ -63,6 +77,11 @@ except Exception as ex:
     raise Exception('Failed to generate files, exception: {}'.format(ex))
 
 
+try:
+    remove_bmo_provisioning("/installer_dir/bootstrap.ign")
+except Exception as ex:
+    raise Exception('Failed to remove BMO prosioning configuration from bootstrap ignition, exception: {}'.format(ex))
+
 args.s3_endpoint_url = os.environ.get("S3_ENDPOINT_URL", args.s3_endpoint_url)
 if args.s3_endpoint_url:
     bucket = os.environ.get('S3_BUCKET', args.s3_bucket)
@@ -77,5 +96,5 @@ if args.s3_endpoint_url:
             logging.info("Uplading file: {}".format(file))
             file = os.path.join(root, r_file)
             s3_file_name = "{}/{}".format(prefix, r_file)
-            print s3_file_name
+            print(s3_file_name)
             uploaded = upload_to_aws(s3, file, bucket, s3_file_name)
