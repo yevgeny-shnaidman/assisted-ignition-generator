@@ -93,7 +93,7 @@ if args.s3_endpoint_url:
 
     for root, _, files in os.walk(args.file_name):
          for r_file in files:
-            logging.info("Uplading file: {}".format(file))
+            logging.info("Uplading file: {}".format(r_file))
             file = os.path.join(root, r_file)
             s3_file_name = "{}/{}".format(prefix, r_file)
             print(s3_file_name)
