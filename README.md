@@ -10,13 +10,18 @@
                              - hack/build.sh                             - CGO_ENABLED flag should be enable in case of baremetal platform also: <if (echo "${TAGS}" | grep -q 'libvirt\|baremetal')>
                              - pkg/types/baremetal/validation/libvirt.go -  build tag should be changed from baremetal to libvirt ( to avoid validations via libvirt)
 
+
+Testing:
+---------------
+You can test generation of files (not the uploading) locally on your laptop
 After coping the install-config.yaml.platform to installer-config.yaml and updating installer-config.yaml file template run this image with the directory containing the installer-config.yaml file mounted
 for example:
 
 ```
-docker run -v $(pwd)/installer_dir:/installer_dir -it quay.io/oscohen/ignition-manifests-and-kubeconfig-generate:latest
+docker run -v $(pwd)/installer_dir:/data/installer_dir -it quay.io/oscohen/ignition-manifests-and-kubeconfig-generate:latest
 ```
 in the mounted dir the ignition files and the kubeconfig will be generated.
+you will also be able to see the list of the files that would have been uploaded to s3 in case of an actual run
 
 Usage: 
 ```

@@ -8,7 +8,15 @@ RUN dnf install -y libvirt-libs pip python && \
 RUN pip install boto3
 RUN pip install botocore
 
-COPY ./openshift-install /
-COPY ./process-ignition-manifests-and-kubeconfig.py /
+ARG WORK_DIR=/data
 
-ENTRYPOINT ["python", "process-ignition-manifests-and-kubeconfig.py"]
+RUN mkdir $WORK_DIR
+RUN chmod 777 $WORK_DIR
+
+COPY ./openshift-install $WORK_DIR
+COPY ./process-ignition-manifests-and-kubeconfig.py $WORK_DIR
+
+ENV WORK_DIR=$WORK_DIR
+
+ENV EXEC_PATH=$WORK_DIR/process-ignition-manifests-and-kubeconfig.py
+ENTRYPOINT python $EXEC_PATH
