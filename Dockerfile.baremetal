@@ -1,4 +1,7 @@
-#FROM python:2.7
+# [TODO] - remove this line, once we are ready to use openshift-installer from the release
+FROM quay.io/yshnaidm/openshift-installer
+
+
 FROM fedora:31
 RUN dnf install -y libvirt-libs pip python && \
    yum clean all && \
@@ -13,7 +16,8 @@ ARG WORK_DIR=/data
 RUN mkdir $WORK_DIR
 RUN chmod 777 $WORK_DIR
 
-COPY ./openshift-install $WORK_DIR
+# [TODO] - change this line to use openshift-installer from the release, once we are ready
+COPY --from=0 /root/installer/openshift-install $WORK_DIR
 COPY ./process-ignition-manifests-and-kubeconfig.py $WORK_DIR
 
 ENV WORK_DIR=$WORK_DIR

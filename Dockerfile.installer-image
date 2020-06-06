@@ -1,0 +1,3 @@
+FROM alpine:latest
+RUN mkdir /root/installer
+COPY ./openshift-install /root/installer
