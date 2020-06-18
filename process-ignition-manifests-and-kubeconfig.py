@@ -101,7 +101,7 @@ def main():
     if not os.path.isfile(os.path.join(config_dir, 'install-config.yaml')):
         raise Exception("install config file not located in installer dir")
 
-    command = "%s/openshift-install create ignition-configs --dir %s" % (work_dir, config_dir)
+    command = "OPENSHIFT_INSTALL_INVOKER=\"assisted-installer\" %s/openshift-install create ignition-configs --dir %s" % (work_dir, config_dir)
     try:
         subprocess.check_output(command, shell=True, stderr=sys.stdout)
     except Exception as ex:
