@@ -22,15 +22,24 @@ Building:
 
 Testing:
 ---------------
-You can test generation of files (not the uploading) locally on your laptop
-After coping the install-config.yaml.platform to installer-config.yaml and updating installer-config.yaml file template run this image with the directory containing the installer-config.yaml file mounted
-for example:
+Testing can be done in 2 stages:
 
-```
-docker run -v $(pwd)/installer_dir:/data/installer_dir -it quay.io/oscohen/ignition-manifests-and-kubeconfig-generate:latest
-```
-in the mounted dir the ignition files and the kubeconfig will be generated.
-you will also be able to see the list of the files that would have been uploaded to s3 in case of an actual run
+1) test generation of the ignition files , locally on your laptop.
+   a) copy install-config.yaml.baremetal to installer-config.yaml in installer_dir.
+   b) run ignition-manifests-and-kubeconfig-generate immage that you previously created.
+
+      docker run -v $(pwd)/installer_dir:/data/installer_dir  -it ignition-manifests-and-kubeconfig-generate:ad6939c67c115cef7877ab7d06d72f2d06cebe0
+
+      if no error is printed, then the ignition files are generated in the nstaller_dir
+
+2) test specific manipulations on generated ignition. Currently only BMH annotations generations is checked. This stage must be run only after first stage
+   a) change permissions of the file generated in the first stage. from installer_dir run:
+      sudo chmod -R 777 auth bootstrap.ign master.ign metadata.json worker.ign .openshift_install.log .openshift_install_state.json
+   b) run:
+      skipper run python3 test_bmh_annotations.py
+
+
+
 
 Usage: 
 ```

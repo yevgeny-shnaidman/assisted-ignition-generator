@@ -1,0 +1,179 @@
+{
+	"errorMessage": "",
+	"goodCredentials": {},
+	"hardwareProfile":"",
+	"operationHistory": {
+		"deprovision": {
+			"end": null, 
+			"start": null
+		}, 
+		"inspect":{
+			"end": null,
+			"start": null
+		},
+		"provision": {
+			"end": null,
+			"start": null
+		},
+		"register":{
+			"end": null,
+			"start": null
+		}
+	},
+	"operationalStatus": "",
+	"poweredOn": false,
+	"provisioning": {
+		"ID": "",
+		"image": {
+			"checksum": "",
+			"url": ""
+		},
+		"state": ""
+	},
+	"triedCredentials": {},
+	"hardware": {
+		"nics": [
+			{
+				"name": "eth0",
+				"model": "0x0001",
+				"mac": "52:54:00:0e:ce:92",
+				"ip": "192.168.126.10",
+				"speed": -1
+			},
+			{
+				"name": "eth1",
+				"model": "0x0001",
+				"mac": "52:54:00:be:00:05",
+				"ip": "192.168.140.105",
+				"speed":-1
+			}
+		],
+		"cpu": {
+			"model": "Intel(R) Xeon(R) Gold 6152 CPU @ 2.10GHz",
+			"arch": "x86_64",
+			"flags": [
+				"fpu",
+				"vme",
+				"de",
+				"pse",
+				"tsc",
+				"msr",
+				"pae",
+				"mce",
+				"cx8",
+				"apic",
+				"sep",
+				"mtrr",
+				"pge",
+				"mca",
+				"cmov",
+				"pat",
+				"pse36",
+				"clflush",
+				"mmx",
+				"fxsr",
+				"sse",
+				"sse2",
+				"ss",
+				"syscall",
+				"nx",
+				"pdpe1gb",
+				"rdtscp",
+				"lm",
+				"constant_tsc",
+				"arch_perfmon",
+				"rep_good",
+				"nopl",
+				"xtopology",
+				"cpuid",
+				"tsc_known_freq",
+				"pni",
+				"pclmulqdq",
+				"vmx",
+				"ssse3",
+				"fma",
+				"cx16",
+				"pcid",
+				"sse4_1",
+				"sse4_2",
+				"x2apic",
+				"movbe",
+				"popcnt",
+				"tsc_deadline_timer",
+				"aes",
+				"xsave",
+				"avx",
+				"f16c",
+				"rdrand",
+				"hypervisor",
+				"lahf_lm",
+				"abm",
+				"3dnowprefetch",
+				"cpuid_fault",
+				"invpcid_single",
+				"pti",
+				"ssbd",
+				"ibrs",
+				"ibpb",
+				"stibp",
+				"tpr_shadow",
+				"vnmi",
+				"flexpriority",
+				"ept", "vpid",
+				"ept_ad",
+				"fsgsbase",
+				"tsc_adjust",
+				"bmi1",
+				"hle",
+				"avx2",
+				"smep",
+				"bmi2",
+				"erms",
+				"invpcid",
+				"rtm",
+				"mpx",
+				"avx512f",
+				"avx512dq",
+				"rdseed",
+				"adx",
+				"smap",
+				"clflushopt",
+				"clwb",
+				"avx512cd",
+				"avx512bw",
+				"avx512vl",
+				"xsaveopt",
+				"xsavec", 
+				"xgetbv1",
+				"xsaves", 
+				"arat", 
+				"umip", 
+				"pku", 
+				"ospke", 
+				"md_clear", 
+				"arch_capabilities"
+			],
+			"clockMegahertz": 2095.076,
+			"count": 4
+		},
+		"storage": [
+			{
+				"name": "vda",
+				"vendor":"0x1af4",
+				"sizeBytes": 21474836480,
+				"model": "unknown", 
+				"wwn": "unknown", 
+				"hctl":null, 
+				"serialNumber": "unknown", 
+				"rotational": true
+			}
+		], 
+		"ramMebibytes": 16984,
+		"hostname": "test-infra-cluster-master-0.redhat.com", 
+		"systemVendor": {
+			"manufacturer":"Red Hat",
+			"productName": "KVM",
+			"serialNumber": null
+		}
+	}
+}
