@@ -14,9 +14,11 @@ from botocore.exceptions import NoCredentialsError
 import utils
 import bmh_utils
 import test_utils
+import oc_utils
 
 INSTALL_CONFIG = "install-config.yaml"
 INSTALL_CONFIG_BACKUP = "backup-install-config.yaml"
+SERVICE_CONFIG = "services-config.yaml"
 
 
 def get_s3_client(s3_endpoint_url, aws_access_key_id, aws_secret_access_key):
@@ -100,9 +102,8 @@ def backup_restore_install_config(config_dir):
 
 
 def generate_installation_files(work_dir, config_dir):
-    # command = "OPENSHIFT_INSTALL_INVOKER=\"assisted-installer\" %s/openshift-baremetal-install create ignition-configs --dir %s" \
-    #        % (work_dir, config_dir)
     with backup_restore_install_config(config_dir=config_dir):
+        # [TODO] - uncomment this line when moving to 4.6, and comment the next one
         # command = "OPENSHIFT_INSTALL_INVOKER=\"assisted-installer\" %s/openshift-baremetal-install create ignition-configs --dir %s" \
         #        % (work_dir, config_dir)
         command = "OPENSHIFT_INSTALL_INVOKER=\"assisted-installer\" %s/openshift-install create " \
@@ -132,19 +133,23 @@ def set_pull_secret(config_dir):
         config_file.write(pull_secret)
 
 
+def prepare_generation_data(work_dir, config_dir, install_config, openshift_release_image):
+    prepare_install_config(config_dir, install_config)
+    set_pull_secret(config_dir)
+    oc_utils.extract_baremetal_installer(work_dir, openshift_release_image)
+
+
 def create_config_dir(work_dir):
     config_dir = os.path.join(work_dir, "installer_dir")
     subprocess.check_output(["mkdir", "-p", config_dir])
     return config_dir
 
 
-def extract_baremetal_installer(work_dir, openshift_release_image):
-    try:
-        command = "{oc_dir}/oc adm release extract --command=openshift-baremetal-install  --to={out_dir} {release_image}".format(
-            oc_dir=work_dir, out_dir=work_dir, release_image=openshift_release_image)
-        subprocess.check_output(command, shell=True, stderr=sys.stdout)
-    except Exception as ex:
-        raise Exception('Failed to extract installer, exception: {}'.format(ex))
+def create_services_config(work_dir, config_dir, openshift_release_image):
+    mco_image = oc_utils.get_mco_image(work_dir, openshift_release_image)
+    config_data = {'mco_image': mco_image}
+    with open(os.path.join(config_dir, SERVICE_CONFIG), "w+") as yaml_file:
+        yaml.dump(config_data, yaml_file)
 
 
 def main():
@@ -166,21 +171,19 @@ def main():
     if not work_dir:
         raise Exception("working directory was not defined")
 
+    # create configuration dir, contains install-config.yaml and generated files(ignitions, kubeconfig)
     config_dir = create_config_dir(work_dir=work_dir)
-    prepare_install_config(config_dir=config_dir, install_config=install_config)
-    set_pull_secret(config_dir=config_dir)
-    extract_baremetal_installer(work_dir, openshift_release_image)
+
+    # prepare all the data(files) needed by opeshift-installer
+    prepare_generation_data(work_dir, config_dir, install_config, openshift_release_image)
+
+    # run openshift installer to produce ignitions and kubeconfig
     generate_installation_files(work_dir=work_dir, config_dir=config_dir)
 
-    # [TODO] - add extracting openshift-baremetal-install from release image and using it instead of locally compile openshift-intall
-    # try:
-    # command = "%s/oc adm release extract --command=openshift-baremetal-install  --to=%s \
-    # quay.io/openshift-release-dev/ocp-release-nightly@sha256:ba2e09a06c7fca19e162286055c6922135049e6b91f71e2a646738b2d7ab9983" \
-    # % (work_dir, work_dir)
-    #    subprocess.check_output(command, shell=True, stderr=sys.stdout)
-    # except Exception as ex:
-    #    raise Exception('Failed to extract installer, exception: {}'.format(ex))
+    # create service config otput
+    create_services_config(work_dir, config_dir, openshift_release_image)
 
+    # update BMH configuration in boostrap ignition
     update_bmh_files("%s/bootstrap.ign" % config_dir, cluster_id, inventory_endpoint)
 
     if s3_endpoint_url:
