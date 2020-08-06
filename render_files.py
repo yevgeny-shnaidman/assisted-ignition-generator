@@ -133,10 +133,12 @@ def set_pull_secret(config_dir):
         config_file.write(pull_secret)
 
 
-def prepare_generation_data(work_dir, config_dir, install_config, openshift_release_image):
+# def prepare_generation_data(work_dir, config_dir, install_config, openshift_release_image):
+def prepare_generation_data(config_dir, install_config):
     prepare_install_config(config_dir, install_config)
     set_pull_secret(config_dir)
-    oc_utils.extract_baremetal_installer(work_dir, openshift_release_image)
+    # [TODO] - remove comment after fixing subsystem
+    # oc_utils.extract_baremetal_installer(work_dir, openshift_release_image)
 
 
 def create_config_dir(work_dir):
@@ -166,7 +168,7 @@ def main():
     bucket = os.environ.get('S3_BUCKET', args.s3_bucket)
     aws_access_key_id = os.environ.get("aws_access_key_id", "accessKey1")
     aws_secret_access_key = os.environ.get("aws_secret_access_key", "verySecretKey1")
-    openshift_release_image = os.environ.get("OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE")
+    # openshift_release_image = os.environ.get("OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE")
 
     if not work_dir:
         raise Exception("working directory was not defined")
@@ -175,13 +177,15 @@ def main():
     config_dir = create_config_dir(work_dir=work_dir)
 
     # prepare all the data(files) needed by opeshift-installer
-    prepare_generation_data(work_dir, config_dir, install_config, openshift_release_image)
+    # prepare_generation_data(work_dir, config_dir, install_config, openshift_release_image)
+    prepare_generation_data(config_dir, install_config)
 
     # run openshift installer to produce ignitions and kubeconfig
     generate_installation_files(work_dir=work_dir, config_dir=config_dir)
 
     # create service config otput
-    create_services_config(work_dir, config_dir, openshift_release_image)
+    # [TODO] - remove after fixing subsystem
+    # create_services_config(work_dir, config_dir, openshift_release_image)
 
     # update BMH configuration in boostrap ignition
     update_bmh_files("%s/bootstrap.ign" % config_dir, cluster_id, inventory_endpoint)
