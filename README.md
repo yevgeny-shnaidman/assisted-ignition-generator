@@ -26,7 +26,7 @@ Testing can be done in 2 stages:
 
 1) test generation of the ignition files , locally on your laptop.
    a) copy install-config.yaml.baremetal to installer-config.yaml in installer_dir.
-   b) run assisted-ignition-generator immage that you previously created.
+   b) run assisted-ignition-generator image that you previously created.
 
       docker run -v $(pwd)/installer_dir:/data/installer_dir  -it assisted-ignition-generator:ad6939c67c115cef7877ab7d06d72f2d06cebe0
 
