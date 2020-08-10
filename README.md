@@ -1,7 +1,7 @@
 ### This is a image for generating ignition manifests & kubeconfig
 
-1) Dockerfile (depricated) - dockerfile for building the ignition-manifests-and-kubeconfig-generate image with openshift-installer platform none
-2) Dockerfile.baremetal - dockerfile for building the ignition-manifests-and-kubeconfig-generate image with openshift-installer platform baremetal
+1) Dockerfile (depricated) - dockerfile for building the assisted-ignition-generator image with openshift-installer platform none
+2) Dockerfile.baremetal - dockerfile for building the assisted-ignition-generator image with openshift-installer platform baremetal
 3) installer_dir/install-config.yaml - example of install-config.yaml for none platform
 4) installer_dir/install-config.yaml.baremetal - example of install-config.yaml for baremetal platform. 
 5) openshift-install - executable that produces ignition files. It is copied from installer repository before issuing docker build command. Should be build in accordance with the platform we are running on
@@ -17,7 +17,7 @@ Building:
    docker build -f Dockerfile.installer-image -t <repository> .
    Example: docker build -f Dockerfile.installer-image -t quay.io/yshnaidm/openshift-installer:latest .
 2) we are using the image built in step 1 to get the needed openshift-install. Once we start using openshift-install from the release, we can update Dockerfile.baremetal accordingly
-   docker build -f Dockerfile.baremetal . -t quay.io/ocpmetal/ignition-manifests-and-kubeconfig-generate:stable
+   docker build -f Dockerfile.baremetal . -t quay.io/ocpmetal/assisted-ignition-generator:stable
 
 
 Testing:
@@ -26,9 +26,9 @@ Testing can be done in 2 stages:
 
 1) test generation of the ignition files , locally on your laptop.
    a) copy install-config.yaml.baremetal to installer-config.yaml in installer_dir.
-   b) run ignition-manifests-and-kubeconfig-generate immage that you previously created.
+   b) run assisted-ignition-generator immage that you previously created.
 
-      docker run -v $(pwd)/installer_dir:/data/installer_dir  -it ignition-manifests-and-kubeconfig-generate:ad6939c67c115cef7877ab7d06d72f2d06cebe0
+      docker run -v $(pwd)/installer_dir:/data/installer_dir  -it assisted-ignition-generator:ad6939c67c115cef7877ab7d06d72f2d06cebe0
 
       if no error is printed, then the ignition files are generated in the nstaller_dir
 

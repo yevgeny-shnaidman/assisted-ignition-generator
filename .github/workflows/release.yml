@@ -33,10 +33,10 @@ jobs:
       - name: Publish image to Registry
         uses: elgohr/Publish-Docker-Github-Action@2.15
         with:
-          name: ignition-manifests-and-kubeconfig-generate
+          name: assisted-ignition-generator
           username: ${{ secrets.OCPMETAL_USERNAME }}
           password: ${{ secrets.OCPMETAL_PASSWORD }}
           REGISTRY: 'quay.io/ocpmetal'
-          dockerfile: Dockerfile.ignition-manifests-and-kubeconfig-generate
+          dockerfile: assisted-ignition-generator
           buildargs: GIT_REVISION
           tags: "${{ env.GIT_TAG }},${{ env.GIT_REVISION }}"

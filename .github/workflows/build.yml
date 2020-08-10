@@ -35,10 +35,10 @@ jobs:
       if: github.event_name != 'pull_request'
       uses: elgohr/Publish-Docker-Github-Action@2.15
       with:
-        name: ignition-manifests-and-kubeconfig-generate
+        name: assisted-ignition-generator
         username: ${{ secrets.OCPMETAL_USERNAME }}
         password: ${{ secrets.OCPMETAL_PASSWORD }}
         REGISTRY: 'quay.io/ocpmetal'
-        dockerfile: Dockerfile.ignition-manifests-and-kubeconfig-generate
+        dockerfile: Dockerfile.assisted-ignition-generator
         buildargs: GIT_REVISION
         tags: "latest,${{ env.GIT_REVISION }}"
