@@ -15,7 +15,7 @@ COPY requirements.txt /tmp/requirements.txt
 COPY --from=inventory /clients/assisted-service-client-*.tar.gz /build/pip/
 RUN pip3 install -r /tmp/requirements.txt
 RUN pip3 install ipython
-RUN find /build/pip/ -name 'setup.py' -exec dirname {} \; | xargs pip3 install
+RUN pip3 install /build/pip/*
 
 RUN rm /tmp/*requirements.txt
 
