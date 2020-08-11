@@ -37,6 +37,6 @@ jobs:
           username: ${{ secrets.OCPMETAL_USERNAME }}
           password: ${{ secrets.OCPMETAL_PASSWORD }}
           REGISTRY: 'quay.io/ocpmetal'
-          dockerfile: assisted-ignition-generator
+          dockerfile: Dockerfile.assisted-ignition-generator
           buildargs: GIT_REVISION
           tags: "${{ env.GIT_TAG }},${{ env.GIT_REVISION }}"
