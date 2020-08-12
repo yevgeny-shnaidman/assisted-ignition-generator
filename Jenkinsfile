@@ -15,8 +15,8 @@ pipeline {
       }
     }
 
-  }
-    stage('publish images on push to master') {
+
+  stage('publish images on push to master') {
                 when {
                     branch 'master'
                 }
@@ -31,5 +31,7 @@ pipeline {
                     sh '''docker push ${GENERATOR_IMAGE}:latest'''
                     sh '''docker push ${GENERATOR_IMAGE}:${GIT_COMMIT}'''
                 }
+
      }
+}
 }
