@@ -33,7 +33,7 @@ def get_s3_client(s3_endpoint_url, aws_access_key_id, aws_secret_access_key):
 
 def upload_to_aws(s3_client, local_file, bucket, s3_file):
     try:
-        s3_client.upload_file(local_file, bucket, s3_file, ExtraArgs={'ACL': 'public-read'})
+        s3_client.upload_file(local_file, bucket, s3_file)
         print("Upload Successful")
         return True
     except NoCredentialsError:
