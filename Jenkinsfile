@@ -1,6 +1,6 @@
 pipeline {
   environment {
-            GENERATOR = 'quay.io/ocpmetal/assisted-ignition-generator'
+            GENERATOR_IMAGE = 'quay.io/ocpmetal/assisted-ignition-GENERATOR_IMAGE'
   }
   agent {
     node {
@@ -26,10 +26,10 @@ pipeline {
                         sh '''docker login quay.io -u $USER -p $PASS'''
                     }
 
-                    sh '''docker tag  ${GENERATOR} ${GENERATOR}:latest'''
-                    sh '''docker tag  ${GENERATOR} ${GENERATOR}:${GIT_COMMIT}'''
-                    sh '''docker push ${GENERATOR}:latest'''
-                    sh '''docker push ${GENERATOR}:${GIT_COMMIT}'''
+                    sh '''docker tag  ${GENERATOR_IMAGE} ${GENERATOR_IMAGE}:latest'''
+                    sh '''docker tag  ${GENERATOR_IMAGE} ${GENERATOR_IMAGE}:${GIT_COMMIT}'''
+                    sh '''docker push ${GENERATOR_IMAGE}:latest'''
+                    sh '''docker push ${GENERATOR_IMAGE}:${GIT_COMMIT}'''
                 }
 
      }
