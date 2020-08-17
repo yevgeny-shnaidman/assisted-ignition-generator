@@ -41,10 +41,12 @@ def upload_to_aws(s3_client, local_file, bucket, s3_file):
         return False
 
 
-def update_bmh_files(ignition_file, cluster_id, inventory_endpoint, token):
+def update_bmh_files(ignition_file, cluster_id, inventory_endpoint, token,
+                     skip_cert_verification=False, ca_cert_path=None):
     try:
         if inventory_endpoint:
-            hosts_list = utils.get_inventory_hosts(inventory_endpoint, cluster_id, token)
+            hosts_list = utils.get_inventory_hosts(inventory_endpoint, cluster_id, token,
+                                                   skip_cert_verification, ca_cert_path)
         else:
             logging.info("Using test data to get hosts list")
             hosts_list = test_utils.get_test_list_hosts(cluster_id)
@@ -178,6 +180,8 @@ def main():
     aws_access_key_id = os.environ.get("aws_access_key_id", "accessKey1")
     aws_secret_access_key = os.environ.get("aws_secret_access_key", "verySecretKey1")
     # openshift_release_image = os.environ.get("OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE")
+    skip_cert_verification = os.environ.get('SKIP_CERT_VERIFICATION', False)
+    ca_cert_path = os.environ.get('CA_CERT_PATH')
 
     if not work_dir:
         raise Exception("working directory was not defined")
@@ -197,7 +201,8 @@ def main():
     # create_services_config(work_dir, config_dir, openshift_release_image)
 
     # update BMH configuration in boostrap ignition
-    update_bmh_files("%s/bootstrap.ign" % config_dir, cluster_id, inventory_endpoint, openshift_token(config_dir))
+    update_bmh_files("%s/bootstrap.ign" % config_dir, cluster_id, inventory_endpoint, openshift_token(config_dir),
+                     skip_cert_verification, ca_cert_path)
 
     if s3_endpoint_url:
         upload_to_s3(s3_endpoint_url, bucket, aws_access_key_id, aws_secret_access_key, config_dir, cluster_id)
