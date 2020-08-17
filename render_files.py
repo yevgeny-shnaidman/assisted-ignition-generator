@@ -19,6 +19,7 @@ import oc_utils
 INSTALL_CONFIG = "install-config.yaml"
 INSTALL_CONFIG_BACKUP = "backup-install-config.yaml"
 SERVICE_CONFIG = "services-config.yaml"
+REGISTRY_CONFIG = "registry-config.json"
 
 
 def get_s3_client(s3_endpoint_url, aws_access_key_id, aws_secret_access_key):
@@ -71,11 +72,9 @@ def update_bmh_files(ignition_file, cluster_id, inventory_endpoint, token,
         with open(ignition_file, "r") as file_obj:
             data = json.load(file_obj)
             storage_files = data['storage']['files']
-            # since we don't remove file for now, we don't need to iterate through copy
-            # for file_data in storage_files[:]:
-            for file_data in storage_files:
-                # if file_data['path'] == '/etc/motd':
-                #    storage_files.remove(file_data)
+            for file_data in storage_files[:]:
+                if file_data['path'] == '/etc/motd' or 'baremetal-provisioning-config' in file_data['path']:
+                    storage_files.remove(file_data)
                 if bmh_utils.is_bmh_cr_file(file_data['path']):
                     bmh_utils.update_bmh_cr_file(file_data, hosts_list)
 
@@ -126,11 +125,8 @@ def backup_restore_install_config(config_dir):
 
 def generate_installation_files(work_dir, config_dir):
     with backup_restore_install_config(config_dir=config_dir):
-        # [TODO] - uncomment this line when moving to 4.6, and comment the next one
-        # command = "OPENSHIFT_INSTALL_INVOKER=\"assisted-installer\" %s/openshift-baremetal-install create ignition-configs --dir %s" \
-        #        % (work_dir, config_dir)
-        command = "OPENSHIFT_INSTALL_INVOKER=\"assisted-installer\" %s/openshift-install create " \
-                  "ignition-configs --dir %s" % (work_dir, config_dir)
+        command = "OPENSHIFT_INSTALL_INVOKER=\"assisted-installer\" %s/openshift-baremetal-install create ignition-configs --dir %s" \
+                % (work_dir, config_dir)
         try:
             logging.info("Generating installation files")
             subprocess.check_output(command, shell=True, stderr=sys.stdout)
@@ -154,18 +150,22 @@ def pull_secret(config_dir):
         return yaml.safe_load(yaml_file)['pullSecret']
 
 
-def set_pull_secret(config_dir):
-    with open('/root/.docker/config.json', 'w+') as config_file:
-        config_file.write(pull_secret(config_dir))
+def set_pull_secret(work_dir, config_dir):
+    registry_file_path = os.path.join(work_dir, REGISTRY_CONFIG)
+    with open(registry_file_path, 'w+') as registry_file:
+        registry_file.write(pull_secret(config_dir))
+    return registry_file_path
 
 
-# def prepare_generation_data(work_dir, config_dir, install_config, openshift_release_image):
-def prepare_generation_data(config_dir, install_config):
+def prepare_generation_data(work_dir, config_dir, install_config, openshift_release_image):
+    # set instal-config.yaml
     prepare_install_config(config_dir, install_config)
-    # [TODO] - part of 4.6 , must be solved as part of MGMT-1816
-    # set_pull_secret(config_dir)
-    # [TODO] - remove comment after fixing subsystem
-    # oc_utils.extract_baremetal_installer(work_dir, openshift_release_image)
+    # set pull secret in a file
+    registry_config_file = set_pull_secret(work_dir, config_dir)
+    # extract openshift-installer
+    oc_utils.extract_baremetal_installer(work_dir, openshift_release_image, registry_config_file)
+    # prepare data for futher use by assistedd-istaller
+    create_services_config(work_dir, config_dir, openshift_release_image, registry_config_file)
 
 
 def create_config_dir(work_dir):
@@ -179,8 +179,8 @@ def openshift_token(config_dir):
     return secret["auths"]["cloud.openshift.com"]["auth"]
 
 
-def create_services_config(work_dir, config_dir, openshift_release_image):
-    mco_image = oc_utils.get_mco_image(work_dir, openshift_release_image)
+def create_services_config(work_dir, config_dir, openshift_release_image, registry_config_file):
+    mco_image = oc_utils.get_mco_image(work_dir, openshift_release_image, registry_config_file)
     config_data = {'mco_image': mco_image}
     with open(os.path.join(config_dir, SERVICE_CONFIG), "w+") as yaml_file:
         yaml.dump(config_data, yaml_file)
@@ -201,7 +201,7 @@ def main():
     bucket = os.environ.get('S3_BUCKET', args.s3_bucket)
     aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID", "accessKey1")
     aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY", "verySecretKey1")
-    # openshift_release_image = os.environ.get("OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE")
+    openshift_release_image = os.environ.get("OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE")
     skip_cert_verification = os.environ.get('SKIP_CERT_VERIFICATION', False)
     ca_cert_path = os.environ.get('CA_CERT_PATH')
 
@@ -212,15 +212,10 @@ def main():
     config_dir = create_config_dir(work_dir=work_dir)
 
     # prepare all the data(files) needed by opeshift-installer
-    # prepare_generation_data(work_dir, config_dir, install_config, openshift_release_image)
-    prepare_generation_data(config_dir, install_config)
+    prepare_generation_data(work_dir, config_dir, install_config, openshift_release_image)
 
     # run openshift installer to produce ignitions and kubeconfig
     generate_installation_files(work_dir=work_dir, config_dir=config_dir)
-
-    # create service config otput
-    # [TODO] - remove after fixing subsystem
-    # create_services_config(work_dir, config_dir, openshift_release_image)
 
     # update BMH configuration in boostrap ignition
     update_bmh_files("%s/bootstrap.ign" % config_dir, cluster_id, inventory_endpoint, openshift_token(config_dir),

@@ -59,4 +59,9 @@ def get_inventory_hosts(inventory_endpoint, cluster_id, token, skip_cert_verific
     apiClient = ApiClient(configuration=configs)
     client = api.InstallerApi(api_client=apiClient)
     hosts_list = client.list_hosts(cluster_id=cluster_id)
+    hosts_list.sort(key=sortFunc)
     return [InventoryHost(host) for host in hosts_list if host['status'] != 'disabled']
+
+
+def sortFunc(host):
+    return host['requested_hostname']

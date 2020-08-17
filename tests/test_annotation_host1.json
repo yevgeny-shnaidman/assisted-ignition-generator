@@ -21,7 +21,7 @@
 		}
 	},
 	"operationalStatus": "",
-	"poweredOn": false,
+	"poweredOn": true,
 	"provisioning": {
 		"ID": "",
 		"image": {

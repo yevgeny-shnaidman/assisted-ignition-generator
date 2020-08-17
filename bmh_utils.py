@@ -33,10 +33,6 @@ def is_master_bmh(bmh_dict):
     return False
 
 
-def update_credentials_name(bmh_dict):
-    bmh_dict['spec']['bmc']['credentialsName'] = ''
-
-
 def set_baremtal_annotation_in_bmh_dict(bmh_dict, annot_dict):
     bmh_dict['metadata']['annotations'] = annot_dict
 
@@ -63,6 +59,7 @@ def prepare_bmh_annotation_dict(status_dict, hosts_list, is_master):
     system_vendor = inventory_host.get_inventory_host_system_vendor()
     hardware = {'nics': nics, 'cpu': cpu, 'storage': storage, 'ramMebibytes': ram, 'hostname': hostname, 'systemVendor': system_vendor}
     annot_dict['hardware'] = hardware
+    annot_dict['poweredOn'] = True
     hosts_list.remove(inventory_host)
     return {'baremetalhost.metal3.io/status': json.dumps(annot_dict)}
 
@@ -71,7 +68,5 @@ def update_bmh_cr_file(file_data, hosts_list):
     bmh_dict = get_bmh_dict_from_file(file_data)
     annot_dict = prepare_bmh_annotation_dict(bmh_dict['status'], hosts_list, is_master_bmh(bmh_dict))
     if annot_dict is not None:
-        # [TODO] - make sure that Kiren fix to openshift-installer is working before removing  this fix in 4.6
-        # update_credentials_name(bmh_dict)
         set_baremtal_annotation_in_bmh_dict(bmh_dict, annot_dict)
         set_new_bmh_dict_in_file(file_data, bmh_dict)
