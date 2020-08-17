@@ -1,7 +1,7 @@
 all: pep8 pylint
 
 pep8:
-	pep8 --max-line-length=145 render_files.py
+	pep8 --max-line-length=145 render_files.py oc_utils.py bmh_utils.py
 
 pylint:
 	mkdir -p reports
