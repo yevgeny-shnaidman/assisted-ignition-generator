@@ -174,14 +174,14 @@ def main():
     work_dir = os.environ.get("WORK_DIR")
     install_config = os.environ.get("INSTALLER_CONFIG")
     cluster_id = os.environ.get("CLUSTER_ID")
-    inventory_endpoint = os.environ.get("INVENTORY_ENDPOINT")
+    # inventory_endpoint = os.environ.get("INVENTORY_ENDPOINT")
     s3_endpoint_url = os.environ.get("S3_ENDPOINT_URL", args.s3_endpoint_url)
     bucket = os.environ.get('S3_BUCKET', args.s3_bucket)
     aws_access_key_id = os.environ.get("aws_access_key_id", "accessKey1")
     aws_secret_access_key = os.environ.get("aws_secret_access_key", "verySecretKey1")
     # openshift_release_image = os.environ.get("OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE")
-    skip_cert_verification = os.environ.get('SKIP_CERT_VERIFICATION', False)
-    ca_cert_path = os.environ.get('CA_CERT_PATH')
+    # skip_cert_verification = os.environ.get('SKIP_CERT_VERIFICATION', False)
+    # ca_cert_path = os.environ.get('CA_CERT_PATH')
 
     if not work_dir:
         raise Exception("working directory was not defined")
@@ -200,9 +200,9 @@ def main():
     # [TODO] - remove after fixing subsystem
     # create_services_config(work_dir, config_dir, openshift_release_image)
 
-    # update BMH configuration in boostrap ignition
-    update_bmh_files("%s/bootstrap.ign" % config_dir, cluster_id, inventory_endpoint, openshift_token(config_dir),
-                     skip_cert_verification, ca_cert_path)
+    # [TODO] update BMH configuration in boostrap ignition - uncomment for 4.6
+    # update_bmh_files("%s/bootstrap.ign" % config_dir, cluster_id, inventory_endpoint, openshift_token(config_dir),
+    #                 skip_cert_verification, ca_cert_path)
 
     if s3_endpoint_url:
         upload_to_s3(s3_endpoint_url, bucket, aws_access_key_id, aws_secret_access_key, config_dir, cluster_id)
