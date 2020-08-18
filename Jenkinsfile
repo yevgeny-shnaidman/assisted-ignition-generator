@@ -4,13 +4,14 @@ pipeline {
   }
   agent {
     node {
-      label 'host'
+      label 'centos_worker'
     }
 
   }
   stages {
     stage('build') {
       steps {
+        sh 'docker image prune -a -f'
         sh 'make build-image'
       }
     }
@@ -22,6 +23,7 @@ pipeline {
                 }
 
                 steps {
+
                     withCredentials([usernamePassword(credentialsId: 'ocpmetal_cred', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                         sh '''docker login quay.io -u $USER -p $PASS'''
                     }
