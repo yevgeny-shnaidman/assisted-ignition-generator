@@ -33,5 +33,17 @@ pipeline {
                 }
 
      }
-}
+  }
+      post {
+          failure {
+              script {
+                  if (env.BRANCH_NAME == 'master')
+                      stage('notify master branch fail') {
+                          withCredentials([string(credentialsId: 'slack-token', variable: 'TOKEN')]) {
+                              sh '''curl -X POST -H 'Content-type: application/json' --data '{"text":"Attention! master branch push integration failed, Check $BUILD_URL"}' https://hooks.slack.com/services/${TOKEN}'''
+                      }
+                  }
+              }
+          }
+      }
 }
