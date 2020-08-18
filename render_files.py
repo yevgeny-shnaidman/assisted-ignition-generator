@@ -68,30 +68,34 @@ def update_bmh_files(ignition_file, cluster_id, inventory_endpoint, token,
         raise Exception('Failed to update BMH CRs in bootstrap ignition, exception: {}'.format(ex))
 
 
+def walk(install_dir):
+    src_dst_files = {}
+    for root, _, files in os.walk(install_dir):
+        for file_name in files:
+            file_path = os.path.join(root, file_name)
+            if file_name == "kubeconfig":
+                file_name = "kubeconfig-noingress"
+            src_dst_files[file_path] = file_name
+    return src_dst_files
+
+
 def upload_to_s3(s3_endpoint_url, bucket, aws_access_key_id, aws_secret_access_key, install_dir, cluster_id):
     s3_client = get_s3_client(s3_endpoint_url, aws_access_key_id, aws_secret_access_key)
     prefix = cluster_id
-
-    for root, _, files in os.walk(install_dir):
-        for file_name in files:
-            logging.info("Uploading file: %s", file_name)
-            file_path = os.path.join(root, file_name)
-            if file_name == "kubeconfig":
-                file_name = "kubeconfig-noingress"
-            s3_file_name = "{}/{}".format(prefix, file_name)
-            print(s3_file_name)
-            upload_to_aws(s3_client, file_path, bucket, s3_file_name)
+    src_dst_files = walk(install_dir)
+    for file_path, dest_file_name in src_dst_files.items():
+        s3_file_name = "{}/{}".format(prefix, dest_file_name)
+        print("Uploading file %s to %s" % (file_path, s3_file_name))
+        upload_to_aws(s3_client, file_path, bucket, s3_file_name)
 
 
-def debug_print_upload_to_s3(install_dir):
-    prefix = "dummy_cluster_id"
-    for root, _, files in os.walk(install_dir):
-        for file_name in files:
-            file_path = os.path.join(root, file_name)
-            if file_name == "kubeconfig":
-                file_name = "kubeconfig-noingress"
-            s3_file_name = "{}/{}".format(prefix, file_name)
-            print("Uploading file %s as object %s" % (file_path, s3_file_name))
+def copy_to_local_storage(work_dir, install_dir, cluster_id):
+    os.makedirs(os.path.join(work_dir, cluster_id), exist_ok=True)
+    src_dst_files = walk(install_dir)
+    for file_path, dest_file_name in src_dst_files.items():
+        local_file_name = "/{}/{}/{}".format(work_dir, cluster_id, dest_file_name)
+        print("Copying file %s to %s" % (file_path, local_file_name))
+        shutil.copyfile(file_path, local_file_name)
 
 
 @contextmanager
@@ -207,8 +211,7 @@ def main():
     if s3_endpoint_url:
         upload_to_s3(s3_endpoint_url, bucket, aws_access_key_id, aws_secret_access_key, config_dir, cluster_id)
     else:
-        # for debug purposes
-        debug_print_upload_to_s3(config_dir)
+        copy_to_local_storage(work_dir, config_dir, cluster_id)
 
 
 if __name__ == "__main__":
