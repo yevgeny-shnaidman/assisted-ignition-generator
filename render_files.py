@@ -45,7 +45,8 @@ def add_dhcp_allocation_file(ignition_file, dhcp_allocation_file):
     try:
         with open(ignition_file, "r") as file_obj:
             data = json.load(file_obj)
-            storage_files = data['storage']['files']
+            data['storage'] = data.get('storage', dict())
+            storage_files = data['storage'].get('files')
             entry = {"filesystem": "root",
                      "path": "/etc/keepalived/unsupported-monitor.conf",
                      "mode": 644,
