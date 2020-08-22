@@ -1,1 +1,3 @@
 OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE=registry.svc.ci.openshift.org/ocp/release:4.6.0-0.nightly-2020-08-18-165040
+CLUSTER_ID=36f9da71-dbed-4cba-a974-7e103285fe55
+DHCP_ALLOCATION_FILE=whatever
