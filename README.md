@@ -1,18 +1,18 @@
 ### This is a image for generating ignition manifests & kubeconfig
 
-1) Dockerfile (depricated) - dockerfile for building the assisted-ignition-generator image with openshift-installer platform none
+1) Dockerfile (deprecated) - dockerfile for building the assisted-ignition-generator image with openshift-installer platform none
 2) Dockerfile.baremetal - dockerfile for building the assisted-ignition-generator image with openshift-installer platform baremetal
 3) installer_dir/install-config.yaml - example of install-config.yaml for none platform
 4) installer_dir/install-config.yaml.baremetal - example of install-config.yaml for baremetal platform. 
 5) openshift-install - executable that produces ignition files. It is copied from installer repository before issuing docker build command. Should be build in accordance with the platform we are running on
     a) none platform       - should be build with command <TAGS="none" hack/build.sh>
-    b) baremetal platform  - should be build with command <TAGS="baremetal" hack/build.sh>. Prior to that the following files in the installer souce code should be changed:
+    b) baremetal platform  - should be build with command <TAGS="baremetal" hack/build.sh>. Prior to that the following files in the installer source code should be changed:
                              - hack/build.sh                             - CGO_ENABLED flag should be enable in case of baremetal platform also: <if (echo "${TAGS}" | grep -q 'libvirt\|baremetal')>
                              - pkg/types/baremetal/validation/libvirt.go -  build tag should be changed from baremetal to libvirt ( to avoid validations via libvirt)
 
 Building:
 ----------------
-1) currently we use our own openshift-install executable. We save it into the containener using Dockerfile.installer-image and pushing it to a repository ( make sure ot make it public. Currently
+1) currently we use our own openshift-install executable. We save it into the container using Dockerfile.installer-image and pushing it to a repository ( make sure to make it public. Currently
    we use quay.io/yshnaidm/openshift-installer. In case we recompile openshift-install, we need to update this image:
    docker build -f Dockerfile.installer-image -t <repository> .
    Example: docker build -f Dockerfile.installer-image -t quay.io/yshnaidm/openshift-installer:latest .
@@ -30,7 +30,7 @@ Testing can be done in 2 stages:
 
       docker run -v $(pwd)/installer_dir:/data/installer_dir  -it assisted-ignition-generator:ad6939c67c115cef7877ab7d06d72f2d06cebe0
 
-      if no error is printed, then the ignition files are generated in the nstaller_dir
+      if no error is printed, then the ignition files are generated in the installer_dir
 
 2) test specific manipulations on generated ignition. Currently only BMH annotations generations is checked. This stage must be run only after first stage
    a) change permissions of the file generated in the first stage. from installer_dir run:
