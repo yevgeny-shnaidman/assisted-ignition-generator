@@ -7,7 +7,7 @@ build:
 	skipper build assisted-ignition-generator 
 
 build-image:
-	docker build -f Dockerfile.assisted-ignition-generator . -t $(GENERATOR)
+	docker build --network=host  -f Dockerfile.assisted-ignition-generator . -t $(GENERATOR)
 
 update: build
 	GIT_REVISION=${GIT_REVISION} docker build --pull --build-arg GIT_REVISION -t $(GENERATOR) -f Dockerfile.assisted-ignition-generator .
