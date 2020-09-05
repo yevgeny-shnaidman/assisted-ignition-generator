@@ -17,8 +17,8 @@ Since this image will be run as a job initiated by assisted-service, all input p
 4) INVENTORY_ENDPOINT - url that defines how python client connects to assisted-service.
 5) S3_ENDPOINT_URL - S3 endpoint. results of the job will be uploaded to that S3
 6) S3_BUCKET - the S3 bucket to upload to
-7) aws_access_key_id - AWS access key id
-8) aws_secret_access_key - AWS secret access key
+7) AWS_ACCESS_KEY_ID - AWS access key id
+8) AWS_SECRET_ACCESS_KEY - AWS secret access key
 9) OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE - the OCP release image that we are working on
 
 Building:
